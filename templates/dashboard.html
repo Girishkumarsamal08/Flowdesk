@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Flowdesk | Dashboard{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Support Dashboard</h2>
+    <div>Agent View</div>
+</div>
+
+<div class="card">
+    <div class="ticket-list">
+        {% if tickets %}
+            {% for ticket in tickets %}
+            <a href="/dashboard/ticket/{{ ticket.id }}" class="ticket-item">
+                <div style="flex-grow: 1;">
+                    <h3 style="margin-bottom: 0;">{{ ticket.title }}</h3>
+                    <div class="ticket-meta">
+                        <span>#{{ ticket.id }}</span>
+                        <span>Replies: {{ ticket.reply_count }}</span>
+                        <span>{{ ticket.updated_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <span class="badge {{ ticket.priority.value }}">{{ ticket.priority.value }}</span>
+                    <span class="badge {{ ticket.status.value }}">{{ ticket.status.value }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                <p>No tickets right now. You're all caught up!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // WebSocket for real-time updates
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/dashboard`);
+
+    ws.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        console.log("Real-time update received:", data);
+        
+        // Simple implementation: reload the page to get fresh data
+        window.location.reload();
+    };
+
+    ws.onclose = function() {
+        console.log("WebSocket disconnected. Attempting to reconnect in 5s...");
+        setTimeout(() => window.location.reload(), 5000);
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket #{{ ticket.id }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Premium Sidebar UI */
+    .detail-sidebar {
+        width: 300px; 
+        position: sticky; 
+        top: 100px;
+    }
+    .verification-box {
+        margin-top: 1rem; 
+        padding-top: 1rem; 
+        border-top: 1px solid var(--glass-border);
+    }
+    .status-badge {
+        padding: 0.5rem; 
+        width: 100%; 
+        text-align: center; 
+        display: block; 
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+    .status-verified { background: rgba(75, 181, 67, 0.2); color: #4bb543; border: 1px solid rgba(75, 181, 67, 0.3); }
+    .status-pending { background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); }
+
+    /* Correction Trigger Styling */
+    .ai-correction-trigger {
+        background: none;
+        border: none;
+        color: var(--accent);
+        cursor: pointer;
+        font-size: 0.75rem;
+        padding: 0.4rem 0;
+        text-decoration: underline;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+    .ai-correction-trigger:hover {
+        opacity: 1;
+    }
+
+    /* System Message Styling */
+    .system-log {
+        text-align: center; 
+        margin: 1.5rem 0; 
+        font-size: 0.8rem; 
+        color: var(--text-secondary); 
+        background: rgba(255,255,255,0.03); 
+        padding: 0.5rem; 
+        border-radius: 4px; 
+        border: 1px dashed var(--glass-border); 
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <a href="/dashboard" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem;">&larr; Back to Dashboard</a>
+</div>
+
+<div style="display: flex; gap: 2rem; align-items: flex-start;">
+    <!-- Main Chat Area -->
+    <div class="card" style="flex-grow: 1; min-width: 60%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--glass-border);">
+            <h3>{{ ticket.title }}</h3>
+            <span class="badge {{ ticket.status.value }}">{{ ticket.status.value }}</span>
+        </div>
+
+        {% if ticket.summary %}
+        <div style="background: rgba(94, 106, 210, 0.1); border-left: 4px solid var(--accent); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+            <h5 style="color: var(--accent); margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px;">AI Executive Summary</h5>
+            <p style="font-size: 0.95rem; font-style: italic;">"{{ ticket.summary }}"</p>
+        </div>
+        {% endif %}
+
+        <div class="chat-window" id="chatWindow">
+            {% for msg in ticket.messages %}
+                {% if msg.sender_type.value == 'system' %}
+                    <div class="system-log">
+                        🤖 {{ msg.content }}
+                    </div>
+                {% else %}
+                    <div class="chat-bubble {{ msg.sender_type.value }}">
+                        <div class="sender-name">{{ msg.sender_type.value }}</div>
+                        <div style="white-space: pre-wrap;">{{ msg.content }}</div>
+                        
+                        {% if msg.sentiment and msg.sender_type.value == 'customer' %}
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; opacity: 0.5;">
+                                Sentiment: {{ msg.sentiment | capitalize }}
+                            </div>
+                        {% endif %}
+
+                        {% if msg.is_corrected %}
+                            <div style="margin-top: 0.5rem; padding: 0.8rem; background: rgba(75, 181, 67, 0.1); border-radius: 6px; font-size: 0.85rem;">
+                                <span style="color: var(--success); font-weight: 600; font-size: 0.7rem;">AGENT CORRECTION:</span><br>
+                                {{ msg.corrected_content }}
+                            </div>
+                        {% elif msg.sender_type.value == 'ai' %}
+                            <div id="msg-content-{{ msg.id }}" style="display: none;">{{ msg.content }}</div>
+                            <button class="ai-correction-trigger" data-msg-id="{{ msg.id }}">
+                                Correct this AI answer
+                            </button>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        {% if ticket.status.value != 'escalated' %}
+        <div style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+            <form id="replyForm" style="display: flex; gap: 1rem;">
+                <select id="senderType" style="padding: 0.8rem; background: rgba(255,255,255,0.03); color: white; border: 1px solid var(--glass-border); border-radius: 8px;">
+                    <option value="customer">Reply as Customer</option>
+                    <option value="system">Reply as Agent</option>
+                </select>
+                <input type="text" id="replyText" required placeholder="Type a message..." style="flex-grow: 1;">
+                <button type="submit" class="btn btn-primary">Send</button>
+            </form>
+        </div>
+        {% else %}
+        <div style="margin-top: 1rem; text-align: center; color: var(--danger); padding: 1rem; background: rgba(217, 76, 76, 0.1); border-radius: 8px;">
+            This ticket has been escalated and automated replies are paused.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar Details -->
+    <div class="card detail-sidebar">
+        <h4 style="margin-bottom: 1rem; color: var(--text-secondary);">Ticket Details</h4>
+        <dl style="font-size: 0.9rem; display: grid; gap: 0.8rem;">
+            <div>
+                <dt style="color: var(--text-secondary); margin-bottom: 0.2rem;">ID</dt>
+                <dd>#{{ ticket.id }}</dd>
+            </div>
+            <div>
+                <dt style="color: var(--text-secondary); margin-bottom: 0.2rem;">Customer</dt>
+                <dd>{{ ticket.customer.email }}</dd>
+            </div>
+            <div>
+                <dt style="color: var(--text-secondary); margin-bottom: 0.2rem;">Priority</dt>
+                <dd><span class="badge {{ ticket.priority.value }}">{{ ticket.priority.value }}</span></dd>
+            </div>
+            <div>
+                <dt style="color: var(--text-secondary); margin-bottom: 0.2rem;">AI Replies</dt>
+                <dd>{{ ticket.reply_count }} / 5</dd>
+            </div>
+            <div>
+                <dt style="color: var(--text-secondary); margin-bottom: 0.2rem;">Created</dt>
+                <dd>{{ ticket.created_at.strftime('%b %d, %Y') if ticket.created_at else 'Unknown' }}</dd>
+            </div>
+            <div class="verification-box">
+                <dt style="color: var(--text-secondary); margin-bottom: 0.5rem;">Purchase Verification</dt>
+                <dd>
+                    {% if ticket.is_verified %}
+                    <span class="status-badge status-verified">✅ VERIFIED ORDER</span>
+                    {% else %}
+                    <span class="status-badge status-pending">PENDING / NO ORDER</span>
+                    {% endif %}
+                </dd>
+            </div>
+        </dl>
+    </div>
+</div>
+
+<!-- Correction Modal -->
+<div id="correctionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="card" style="width: 500px;">
+        <h3>Correct AI Response</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">The original AI response will be preserved, but your correction will be shown to the team.</p>
+        <textarea id="correctionText" style="width: 100%; min-height: 150px; margin-bottom: 1rem;"></textarea>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button class="btn" onclick="closeCorrectionModal()" style="background: rgba(255,255,255,0.05); color: white;">Cancel</button>
+            <button class="btn btn-primary" onclick="submitCorrection()">Save Correction</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Auto scroll to bottom
+    const chatWindow = document.getElementById('chatWindow');
+    if (chatWindow) chatWindow.scrollTop = chatWindow.scrollHeight;
+
+    // Handle Reply Form
+    const replyForm = document.getElementById('replyForm');
+    if (replyForm) {
+        replyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerText = 'Sending...';
+            btn.disabled = true;
+
+            const payload = {
+                sender_type: document.getElementById('senderType').value,
+                content: document.getElementById('replyText').value
+            };
+
+            await fetch('/api/tickets/{{ ticket.id }}/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (payload.sender_type === 'customer') {
+                btn.innerText = 'AI Thinking...';
+                setTimeout(() => window.location.reload(), 4000);
+            } else {
+                window.location.reload();
+            }
+        });
+    }
+
+    // Agentic Correction Logic (Data-driven, no inline JS errors)
+    let currentMsgId = null;
+
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('ai-correction-trigger')) {
+            const msgId = e.target.dataset.msgId;
+            currentMsgId = msgId;
+            const content = document.getElementById(`msg-content-${msgId}`).innerText;
+            document.getElementById('correctionText').value = content;
+            document.getElementById('correctionModal').style.display = 'flex';
+        }
+    });
+
+    function closeCorrectionModal() {
+        document.getElementById('correctionModal').style.display = 'none';
+        currentMsgId = null;
+    }
+
+    async function submitCorrection() {
+        if (!currentMsgId) return;
+        const text = document.getElementById('correctionText').value;
+        const btn = document.querySelector('#correctionModal .btn-primary');
+        btn.innerText = 'Saving...';
+        btn.disabled = true;
+
+        await fetch(`/api/tickets/{{ ticket.id }}/messages/${currentMsgId}/correct`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sender_type: 'system', content: text })
+        });
+
+        window.location.reload();
+    }
+</script>
+{% endblock %}

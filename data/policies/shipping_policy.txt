@@ -1,0 +1,7 @@
+# Shipping Policy
+Standard shipping takes 5-7 business days and is free on orders over $50.
+Expedited shipping takes 2-3 business days and costs $15.
+Overnight shipping costs $25 and is delivered the next business day if ordered before 2 PM EST.
+Once an order has shipped, the customer will receive an email with tracking information.
+We currently only ship within the United States and Canada.
+If a tracking states the package was delivered but the customer cannot find it, they must wait 24 hours before contacting support, as sometimes carriers mark packages delivered early.

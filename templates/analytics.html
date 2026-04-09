@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Live Analytics - Flowdesk{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+    <div>
+        <h1 style="margin-bottom: 0.5rem;">System Analytics</h1>
+        <p style="color: var(--text-secondary);">Real-time performance and sentiment metrics.</p>
+    </div>
+    <div class="badge open">Live Updates Enabled</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+    <!-- Status Distribution -->
+    <div class="card">
+        <h3>Ticket Status Distribution</h3>
+        <div style="height: 300px;">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Sentiment Distribution -->
+    <div class="card">
+        <h3>Customer Sentiment</h3>
+        <div style="height: 300px;">
+            <canvas id="sentimentChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Ticket Volume -->
+    <div class="card" style="grid-column: 1 / -1;">
+        <h3>Daily Ticket Volume</h3>
+        <div style="height: 300px;">
+            <canvas id="volumeChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    async function loadCharts() {
+        // Fetch Data
+        const [statusRes, sentimentRes, volumeRes] = await Promise.all([
+            fetch('/api/analytics/status'),
+            fetch('/api/analytics/sentiment'),
+            fetch('/api/analytics/volume')
+        ]);
+
+        const statusData = await statusRes.json();
+        const sentimentData = await sentimentRes.json();
+        const volumeData = await volumeRes.json();
+
+        // 1. Status Chart
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(statusData).map(s => s.toUpperCase()),
+                datasets: [{
+                    data: Object.values(statusData),
+                    backgroundColor: ['#4bb543', '#5e6ad2', '#d94c4c'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#9ba1a6', font: { family: 'Outfit' } } }
+                }
+            }
+        });
+
+        // 2. Sentiment Chart
+        new Chart(document.getElementById('sentimentChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(sentimentData).map(s => s.toUpperCase()),
+                datasets: [{
+                    label: 'Messages',
+                    data: Object.values(sentimentData),
+                    backgroundColor: ['#d94c4c', '#9ba1a6', '#4bb543'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ba1a6' } },
+                    x: { grid: { display: false }, ticks: { color: '#9ba1a6' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // 3. Volume Chart
+        new Chart(document.getElementById('volumeChart'), {
+            type: 'line',
+            data: {
+                labels: volumeData.map(d => d.date),
+                datasets: [{
+                    label: 'New Tickets',
+                    data: volumeData.map(d => d.count),
+                    borderColor: '#5e6ad2',
+                    backgroundColor: 'rgba(94, 106, 210, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ba1a6', stepSize: 1 } },
+                    x: { grid: { display: false }, ticks: { color: '#9ba1a6' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    loadCharts();
+</script>
+{% endblock %}

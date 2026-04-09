@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+sqlalchemy
+jinja2
+langchain
+langchain-groq
+langchain-community
+chromadb
+python-dotenv
+requests
+pydantic[email]
+pydantic-settings
+python-multipart
+faiss-cpu
+sentence-transformers
