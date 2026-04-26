@@ -330,15 +330,72 @@ textarea:focus {
     color: #ffffff;
 }
 
+.feature-heading {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: center;
+}
+
 .features-section {
-    margin-top: 6rem;
+    margin-top: 2rem;
     width: 100%;
     max-width: 1000px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
-    padding: 2rem;
-    margin-bottom: 4rem;
+    padding: 1rem 2rem;
+    margin-bottom: 2rem;
+}
+
+.workflow-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 800px;
+    width: 100%;
+    margin: 2rem auto 4rem auto;
+    padding: 0 2rem;
+}
+
+.workflow-step {
+    display: flex;
+    align-items: center;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    gap: 1.5rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.workflow-step:hover {
+    transform: translateX(10px);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.workflow-number {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--accent);
+    opacity: 0.8;
+    min-width: 50px;
+}
+
+.workflow-content h3 {
+    font-size: 1.2rem;
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.workflow-content p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
 }
 
 .feature-card {
