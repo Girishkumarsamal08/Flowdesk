@@ -1,7 +1,6 @@
 import sys
 import os
 
-# Add project root to path
 sys.path.append('/Users/girishkumarsamal/Downloads/Flowdesk')
 
 from services.ai_service import ai_service

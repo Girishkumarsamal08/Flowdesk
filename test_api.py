@@ -6,7 +6,7 @@ BASE_URL = "http://127.0.0.1:8000/api/tickets"
 def test_flowdesk():
     print("🚀 Starting Flowdesk API Test...")
     
-    # 1. Create a ticket
+
     print("\n1. Creating a new ticket about a return...")
     payload = {
         "title": "Need a return",
@@ -23,11 +23,11 @@ def test_flowdesk():
     ticket_id = ticket["id"]
     print(f"✅ Ticket created! ID: {ticket_id}")
     
-    # Wait for background task to process AI reply
+
     print("Waiting for AI response...")
     time.sleep(5)
     
-    # 2. Check ticket messages
+
     print("\n2. Checking conversation history...")
     response = requests.get(f"{BASE_URL}/{ticket_id}")
     ticket = response.json()
@@ -35,7 +35,7 @@ def test_flowdesk():
     for msg in ticket["messages"]:
         print(f"[{msg['sender_type']}] {msg['content']}")
         
-    # 3. Simulate escalation
+
     print("\n3. Simulating negative sentiment to trigger escalation...")
     message_payload = {
         "sender_type": "customer",
@@ -43,11 +43,11 @@ def test_flowdesk():
     }
     response = requests.post(f"{BASE_URL}/{ticket_id}/messages", json=message_payload)
     
-    # Wait for background task
+
     print("Waiting for AI/Escalation processing...")
     time.sleep(5)
     
-    # 4. Check final status
+
     response = requests.get(f"{BASE_URL}/{ticket_id}")
     ticket = response.json()
     print(f"\nFinal Ticket Status: {ticket['status']}")

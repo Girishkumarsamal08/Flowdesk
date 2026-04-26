@@ -8,17 +8,14 @@ from db.models import Ticket, Organization, OrganizationConfig, TicketStatus, Se
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-# --- 1. LANDING PAGE ---
 @router.get("/", response_class=HTMLResponse)
 async def landing_page(request: Request):
     return templates.TemplateResponse(request=request, name="landing.html", context={})
 
-# --- 2. CUSTOMER SUPPORT FORM ---
 @router.get("/support", response_class=HTMLResponse)
 async def support_page(request: Request, org_id: int = 1):
     return templates.TemplateResponse(request=request, name="contact.html", context={"org_id": org_id})
 
-# --- 3. COMPANY AUTH ---
 @router.get("/company/auth", response_class=HTMLResponse)
 async def company_auth_page(request: Request):
     return templates.TemplateResponse(request=request, name="company_auth.html", context={})
@@ -27,7 +24,6 @@ async def company_auth_page(request: Request):
 async def forgot_password_page(request: Request):
     return templates.TemplateResponse(request=request, name="forgot_password.html", context={})
 
-# --- 4. TICKET DASHBOARD ---
 @router.get("/company/dashboard", response_class=HTMLResponse)
 async def company_dashboard_page(request: Request, org_id: int = 1, db: Session = Depends(get_db)):
     tickets = db.query(Ticket).filter(Ticket.organization_id == org_id).order_by(Ticket.updated_at.desc()).all()
@@ -35,7 +31,6 @@ async def company_dashboard_page(request: Request, org_id: int = 1, db: Session 
 
 from sqlalchemy.orm import joinedload
 
-# --- 5. CONVERSATION VIEW ---
 @router.get("/company/tickets/{ticket_id}", response_class=HTMLResponse)
 async def conversation_view_page(request: Request, ticket_id: int, org_id: int = 1, db: Session = Depends(get_db)):
     ticket = db.query(Ticket).options(joinedload(Ticket.organization)).filter(
@@ -44,7 +39,6 @@ async def conversation_view_page(request: Request, ticket_id: int, org_id: int =
     ).first()
     return templates.TemplateResponse(request=request, name="ticket_detail.html", context={"ticket": ticket, "org_id": org_id})
 
-# --- 6. SETTINGS ---
 @router.get("/company/settings", response_class=HTMLResponse)
 async def settings_page(request: Request, org_id: int = 1, db: Session = Depends(get_db)):
     org = db.query(Organization).filter(Organization.id == org_id).first()
@@ -60,13 +54,12 @@ async def track_status_page(request: Request, token: str, db: Session = Depends(
     if not ticket:
         return templates.TemplateResponse(request=request, name="track_form.html", context={"error": "Invalid Tracking Token"})
     
-    # If resolved, show resolved message
+
     if ticket.status == TicketStatus.RESOLVED:
         return templates.TemplateResponse(request=request, name="track_resolved.html", context={"ticket": ticket})
         
     return templates.TemplateResponse(request=request, name="track.html", context={"ticket": ticket})
 
-# --- OTHER ---
 @router.get("/analytics", response_class=HTMLResponse)
 async def analytics_page(request: Request, org_id: int = 1):
     return templates.TemplateResponse(request=request, name="analytics.html", context={"org_id": org_id})

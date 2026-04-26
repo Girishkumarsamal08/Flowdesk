@@ -3,7 +3,6 @@ from typing import List, Optional
 from datetime import datetime
 from db.models import TicketStatus, Priority, SenderType, UserRole
 
-# Organization Schemas
 class OrganizationConfigBase(BaseModel):
     max_reply_count: int = 5
     sentiment_threshold: float = 0.3
@@ -36,7 +35,6 @@ class Organization(OrganizationBase):
     class Config:
         from_attributes = True
 
-# User Schemas
 class UserBase(BaseModel):
     email: EmailStr
     full_name: Optional[str] = None
@@ -67,7 +65,6 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
-# Message Schemas
 class MessageBase(BaseModel):
     sender_type: SenderType
     content: str
@@ -88,7 +85,6 @@ class Message(MessageBase):
     class Config:
         from_attributes = True
 
-# Ticket Schemas
 class TicketBase(BaseModel):
     title: str
 
@@ -115,7 +111,6 @@ class Ticket(TicketBase):
     class Config:
         from_attributes = True
 
-# Customer Schemas
 class CustomerBase(BaseModel):
     email: EmailStr
     name: Optional[str] = None

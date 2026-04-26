@@ -18,7 +18,7 @@ class ConnectionManager:
                 await connection.send_json(message)
             except Exception as e:
                 print(f"Error broadcasting message: {e}")
-                # Optional: cleanup broken connections
+
                 pass
 
 manager = ConnectionManager()

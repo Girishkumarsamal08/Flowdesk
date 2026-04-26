@@ -4,7 +4,6 @@ import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("EmailService")
 
@@ -53,7 +52,7 @@ class EmailService:
         """
         Sends a real email via Gmail SMTP using dynamic company credentials.
         """
-        # 1. Determine which credentials to use
+
         sender_email = smtp_config.get("email") if smtp_config else os.getenv("SUPPORT_EMAIL")
         password = smtp_config.get("password") if smtp_config else os.getenv("SUPPORT_PASS")
 
@@ -67,10 +66,10 @@ class EmailService:
             msg['To'] = recipient
             msg['Subject'] = subject
             
-            # Generate the Amazon-style HTML
+
             html_content = self._generate_html_template(customer_name, body, company_name)
             
-            # Attach both plain and html versions
+
             msg.attach(MIMEText(body, 'plain'))
             msg.attach(MIMEText(html_content, 'html'))
 

@@ -6,7 +6,7 @@ from ai.rag_service import rag_service
 
 class AIService:
     def __init__(self):
-        # We will initialize the LLM lazily to avoid crashing if API key is not set initially
+
         self.llm = None
 
     def _get_llm(self):
@@ -15,7 +15,7 @@ class AIService:
         
         if settings.GROQ_API_KEY and "your_groq_api_key_here" not in settings.GROQ_API_KEY:
             try:
-                # Optimized for speed and correctness
+
                 self.llm = ChatGroq(temperature=0, groq_api_key=settings.GROQ_API_KEY, model_name="llama-3.3-70b-versatile")
             except Exception as e:
                 print(f"Failed to initialize Groq LLM: {e}")
@@ -29,7 +29,6 @@ class AIService:
                 "reasoning": "GROQ_API_KEY missing"
             }
 
-        # Get context from RAG for the specific organization
         context = rag_service.get_relevant_context(organization_id, customer_query)
 
         prompt = ChatPromptTemplate.from_messages([
@@ -74,7 +73,7 @@ TEXT: {text}"""),
         try:
             response = chain.invoke({"text": text})
             res = response.content.lower().strip().replace(".", "")
-            # Safety check to ensure we only return one of the three
+
             for s in ["negative", "positive", "neutral"]:
                 if s in res:
                     return s
@@ -103,7 +102,7 @@ TEXT: {text}"""),
             return "Failed to generate summary."
 
     def polish_response(self, draft: str, customer_name: str, company_name: str) -> str:
-        # Professional Fallback Template
+
         fallback = f"""Dear {customer_name},
 
 We sincerely apologize for the inconvenience you’ve experienced.

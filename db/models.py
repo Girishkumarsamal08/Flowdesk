@@ -34,7 +34,7 @@ class Organization(Base):
     support_email = Column(String, nullable=True)  # New field
     api_key = Column(String, unique=True, index=True, nullable=False)
     
-    # Custom SMTP Settings
+
     smtp_email = Column(String, nullable=True)
     smtp_password = Column(String, nullable=True)
     

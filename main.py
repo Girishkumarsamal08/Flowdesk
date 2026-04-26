@@ -9,7 +9,6 @@ from core.config import settings
 from fastapi import WebSocket, WebSocketDisconnect
 from core.websocket_manager import manager
 
-# Create database tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title=settings.PROJECT_NAME)
@@ -27,7 +26,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            # Keep connection open
+
             await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket)

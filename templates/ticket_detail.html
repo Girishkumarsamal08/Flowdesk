@@ -4,7 +4,7 @@
 
 {% block extra_head %}
 <style>
-    /* Private Agent Navbar Overlay */
+    
     .agent-nav {
         display: flex;
         gap: 2rem;
@@ -24,7 +24,7 @@
         color: white;
     }
 
-    /* Polishing Area Styling */
+    
     .polish-container {
         margin-top: 2rem;
         background: rgba(255, 255, 255, 0.02);
@@ -112,7 +112,7 @@
 </div>
 
 <div style="display: flex; gap: 2rem; align-items: flex-start;">
-    <!-- Main Chat Area -->
+    
     <div style="flex-grow: 1;">
         {% if not ticket.organization.smtp_email %}
         <div class="smtp-warning">
@@ -154,7 +154,7 @@
             </div>
         </div>
 
-        <!-- EXECUTIVE AI-POLISH DRAFTING AREA -->
+        
         <div class="card">
             {% if not ticket.organization.smtp_email %}
             <div class="smtp-warning">
@@ -178,7 +178,7 @@
         </div>
     </div>
 
-    <!-- Sidebar -->
+    
     <div class="card" style="width: 320px; position: sticky; top: 2rem;">
         <h4 style="margin-bottom: 1.5rem; color: var(--text-secondary);">Customer Details</h4>
         <div style="display: grid; gap: 1.2rem; font-size: 0.9rem;">
@@ -217,7 +217,7 @@
 
 {% block extra_scripts %}
 <script>
-    // Auto scroll chat
+    
     const chatWindow = document.getElementById('chatWindow');
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
@@ -226,7 +226,7 @@
     const sendEmailBtn = document.getElementById('sendEmailBtn');
     const polishResult = document.getElementById('polishResult');
 
-    // Step 1: Polish the draft
+    
     polishBtn.addEventListener('click', async () => {
         const draft = draftInput.value;
         if (!draft) return alert('Please enter some notes to polish.');
@@ -256,7 +256,7 @@
         }
     });
 
-    // Step 2: Send the polished email
+    
     sendEmailBtn.addEventListener('click', async () => {
         const finalContent = polishResult.innerText;
 

@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function animate() {
-        // smooth follow effect
+        
         currentX += (mouseX - currentX) * 0.1;
         currentY += (mouseY - currentY) * 0.1;
 
@@ -27,15 +27,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     animate();
 
-    // Hover effect
+    
     document.addEventListener('mouseover', (e) => {
-        if (e.target.closest('a, button, .btn, .hero-container')) {
+        if (e.target.closest('a, button, .btn, .hero-container, .feature-card')) {
             cursor.classList.add('hovering');
         }
     });
 
     document.addEventListener('mouseout', (e) => {
-        if (e.target.closest('a, button, .btn, .hero-container')) {
+        if (e.target.closest('a, button, .btn, .hero-container, .feature-card')) {
             cursor.classList.remove('hovering');
         }
     });

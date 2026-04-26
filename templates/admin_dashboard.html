@@ -14,9 +14,9 @@
 </div>
 
 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
-    <!-- Left Column: Policies & AI Config -->
+    
     <div style="display: flex; flex-direction: column; gap: 2rem;">
-        <!-- AI Configuration -->
+        
         <div class="card">
             <h3>AI Configuration</h3>
             <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">Tune how the autonomous agent handles queries.</p>
@@ -44,7 +44,7 @@
             </form>
         </div>
 
-        <!-- Policy Upload -->
+        
         <div class="card">
             <h3>Company Policies (Knowledge Base)</h3>
             <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">Upload .txt files containing your company policies for the RAG engine.</p>
@@ -62,7 +62,7 @@
         </div>
     </div>
 
-    <!-- Right Column: Stats & Meta -->
+    
     <div style="display: flex; flex-direction: column; gap: 2rem;">
         <div class="card">
             <h3>Quick Stats</h3>
@@ -99,7 +99,7 @@
 
 {% block extra_scripts %}
 <script>
-    // Handle Config Save
+    
     document.getElementById('configForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const payload = {
@@ -117,13 +117,13 @@
         if (res.ok) alert('Configuration updated successfully');
     });
 
-    // Handle File Selection UI
+    
     document.getElementById('policyFile').addEventListener('change', (e) => {
         const name = e.target.files[0] ? e.target.files[0].name : 'Click to select policy file (.txt)';
         document.getElementById('fileName').innerText = name;
     });
 
-    // Handle Policy Upload
+    
     document.getElementById('policyForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const fileInput = document.getElementById('policyFile');

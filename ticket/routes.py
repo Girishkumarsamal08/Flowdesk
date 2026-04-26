@@ -11,12 +11,11 @@ router = APIRouter()
 
 @router.post("/", response_model=schemas.Ticket)
 def create_ticket(ticket_in: schemas.TicketCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    # Verify organization
+
     org = db.query(Organization).filter(Organization.id == ticket_in.organization_id).first()
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
 
-    # Find or create customer WITHIN the organization
     customer = db.query(Customer).filter(
         Customer.email == ticket_in.customer_email,
         Customer.organization_id == ticket_in.organization_id
@@ -32,7 +31,7 @@ def create_ticket(ticket_in: schemas.TicketCreate, background_tasks: BackgroundT
         db.commit()
         db.refresh(customer)
     
-    # Create ticket with 6-digit token
+
     import random
     token = str(random.randint(100000, 999999))
     
@@ -46,7 +45,7 @@ def create_ticket(ticket_in: schemas.TicketCreate, background_tasks: BackgroundT
     db.commit()
     db.refresh(ticket)
     
-    # Add initial message
+
     message = Message(
         ticket_id=ticket.id,
         organization_id=ticket_in.organization_id,

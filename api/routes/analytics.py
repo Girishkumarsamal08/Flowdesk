@@ -16,7 +16,7 @@ def get_status_counts(organization_id: int, db: Session = Depends(get_db)):
 
 @router.get("/sentiment")
 def get_sentiment_distribution(organization_id: int, db: Session = Depends(get_db)):
-    # Only analyze sentiments from customer messages
+
     counts = db.query(Message.sentiment, func.count(Message.id))\
         .filter(Message.organization_id == organization_id)\
         .filter(Message.sender_type == SenderType.CUSTOMER)\
@@ -26,7 +26,7 @@ def get_sentiment_distribution(organization_id: int, db: Session = Depends(get_d
 
 @router.get("/volume")
 def get_ticket_volume(organization_id: int, db: Session = Depends(get_db)):
-    # Group by date
+
     counts = db.query(func.date(Ticket.created_at), func.count(Ticket.id))\
         .filter(Ticket.organization_id == organization_id)\
         .group_by(func.date(Ticket.created_at))\

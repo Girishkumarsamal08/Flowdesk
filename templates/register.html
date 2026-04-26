@@ -64,7 +64,7 @@
             if (response.ok) {
                 const data = await response.json();
                 btn.innerText = 'Success! Redirecting...';
-                // Automatically log them in or redirect to login
+                
                 setTimeout(() => window.location.href = '/login', 1500);
             } else {
                 const error = await response.json();

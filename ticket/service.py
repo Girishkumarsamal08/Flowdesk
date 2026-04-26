@@ -20,7 +20,7 @@ async def verify_order_background(ticket_id: int):
             return
             
         customer_email = ticket.customer.email
-        # Check if an order exists for this email WITHIN the same organization
+
         order = db.query(Order).filter(
             Order.customer_email == customer_email,
             Order.organization_id == ticket.organization_id
@@ -61,26 +61,22 @@ async def process_customer_message(ticket_id: int):
         ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
         if not ticket: return
 
-        # Load Organization Config
         config = db.query(OrganizationConfig).filter(OrganizationConfig.organization_id == ticket.organization_id).first()
         if not config:
-            # Create default config if missing
+
             config = OrganizationConfig(organization_id=ticket.organization_id)
             db.add(config)
             db.commit()
             db.refresh(config)
 
-        # Get latest message
         latest_msg = db.query(Message).filter(Message.ticket_id == ticket_id).order_by(Message.id.desc()).first()
         if not latest_msg or latest_msg.sender_type != SenderType.CUSTOMER:
             return
 
-        # 1. Analyze sentiment
         sentiment = ai_service.analyze_sentiment(latest_msg.content)
         latest_msg.sentiment = sentiment
         db.commit()
 
-        # 2. Check Escalation Rules
         customer_msg_count = db.query(Message).filter(
             Message.ticket_id == ticket_id, 
             Message.sender_type == SenderType.CUSTOMER
@@ -89,22 +85,21 @@ async def process_customer_message(ticket_id: int):
         needs_escalation = False
         escalation_reason = []
         
-        # Rule A: Reply count limit reached
+
         if customer_msg_count >= config.max_reply_count:
             needs_escalation = True
             escalation_reason.append(f"Max replies ({config.max_reply_count}) exceeded")
         
-        # Rule B: Critical keywords (Advanced Escalation)
+
         critical_keywords = ["lawyer", "sue", "legal", "fraud", "scam"]
         if any(kw in latest_msg.content.lower() for kw in critical_keywords):
             needs_escalation = True
             ticket.priority = Priority.HIGH
             escalation_reason.append("Critical keywords detected")
 
-        # Rule C: Sentiment threshold
         if sentiment == "negative":
             ticket.priority = Priority.HIGH
-            # Optional: compare against config.sentiment_threshold if it were numeric
+
             needs_escalation = True
             escalation_reason.append("Negative sentiment detected")
             
@@ -112,7 +107,7 @@ async def process_customer_message(ticket_id: int):
             ticket.status = TicketStatus.ESCALATED
             ticket.priority = Priority.HIGH
             
-            # Generate summary for the agent
+
             history_msgs = db.query(Message).filter(Message.ticket_id == ticket_id).order_by(Message.created_at.asc()).all()
             history_str = "\n".join([f"{m.sender_type.value}: {m.content}" for m in history_msgs])
             ticket.summary = ai_service.summarize_thread(history_str)
@@ -130,7 +125,6 @@ async def process_customer_message(ticket_id: int):
             await manager.broadcast({"event": "ticket_updated", "ticket_id": ticket_id, "status": "escalated"})
             return
 
-        # 3. Handle First Message vs Follow-up
         if customer_msg_count == 1:
             from services.email.service import email_service
             
@@ -143,7 +137,7 @@ async def process_customer_message(ticket_id: int):
             db.add(confirmation_msg)
             db.commit()
             
-            # Send Email to Customer with Tracking Token
+
             smtp_config = {
                 "email": ticket.organization.smtp_email,
                 "password": ticket.organization.smtp_password

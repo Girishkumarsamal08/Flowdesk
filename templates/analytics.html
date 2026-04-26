@@ -25,7 +25,7 @@
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
-    <!-- Status Distribution -->
+    
     <div class="card">
         <h3>Ticket Status Distribution</h3>
         <div style="height: 300px;">
@@ -33,7 +33,7 @@
         </div>
     </div>
 
-    <!-- Sentiment Distribution -->
+    
     <div class="card">
         <h3>Customer Sentiment</h3>
         <div style="height: 300px;">
@@ -41,7 +41,7 @@
         </div>
     </div>
 
-    <!-- Ticket Volume -->
+    
     <div class="card" style="grid-column: 1 / -1;">
         <h3>Daily Ticket Volume</h3>
         <div style="height: 300px;">
@@ -54,7 +54,7 @@
 {% block extra_scripts %}
 <script>
     async function loadCharts() {
-        // Fetch Data
+        
         const [statusRes, sentimentRes, volumeRes] = await Promise.all([
             fetch('/api/analytics/status?organization_id={{ org_id }}'),
             fetch('/api/analytics/sentiment?organization_id={{ org_id }}'),
@@ -65,7 +65,7 @@
         const sentimentData = await sentimentRes.json();
         const volumeData = await volumeRes.json();
 
-        // 1. Status Chart
+        
         new Chart(document.getElementById('statusChart'), {
             type: 'doughnut',
             data: {
@@ -85,7 +85,7 @@
             }
         });
 
-        // 2. Sentiment Chart
+        
         new Chart(document.getElementById('sentimentChart'), {
             type: 'bar',
             data: {
@@ -108,7 +108,7 @@
             }
         });
 
-        // 3. Volume Chart
+        
         new Chart(document.getElementById('volumeChart'), {
             type: 'line',
             data: {

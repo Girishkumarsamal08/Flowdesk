@@ -4,13 +4,13 @@ import uuid
 from core.auth import get_password_hash
 
 def init_test_data():
-    # Force recreation of tables to include new columns (smtp_email, etc.)
+
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     
     db = SessionLocal()
     
-    # 1. Create Organization (Apple Inc.)
+
     org = Organization(
         name="Apple Inc.",
         domain="apple.com",
@@ -22,7 +22,7 @@ def init_test_data():
     db.commit()
     db.refresh(org)
     
-    # 2. Create Admin User with your requested password
+
     admin = User(
         organization_id=org.id,
         email="admin@apple.com",
@@ -32,7 +32,7 @@ def init_test_data():
     )
     db.add(admin)
     
-    # 3. Create Config
+
     config = OrganizationConfig(
         organization_id=org.id,
         max_reply_count=5,
@@ -41,7 +41,7 @@ def init_test_data():
     )
     db.add(config)
     
-    # 4. Create a test order for verification
+
     order = Order(
         organization_id=org.id,
         customer_email="biswajitasamal8342@gmail.com",

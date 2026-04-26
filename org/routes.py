@@ -14,12 +14,12 @@ router = APIRouter()
 
 @router.post("/", response_model=schemas.Organization)
 def create_organization(org_in: schemas.OrganizationCreate, db: Session = Depends(get_db)):
-    # Check if domain already exists
+
     existing = db.query(Organization).filter(Organization.domain == org_in.domain).first()
     if existing:
         raise HTTPException(status_code=400, detail="Organization with this domain already exists")
     
-    # Create organization
+
     api_key = f"fd_{uuid.uuid4().hex}"
     org = Organization(
         name=org_in.name,
@@ -32,7 +32,7 @@ def create_organization(org_in: schemas.OrganizationCreate, db: Session = Depend
     db.commit()
     db.refresh(org)
     
-    # Create Admin User
+
     admin_user = User(
         organization_id=org.id,
         email=org_in.support_email, # Default admin email
@@ -42,12 +42,12 @@ def create_organization(org_in: schemas.OrganizationCreate, db: Session = Depend
     )
     db.add(admin_user)
     
-    # Create default config
+
     config = OrganizationConfig(organization_id=org.id)
     db.add(config)
     db.commit()
     
-    # Initialize RAG store directory
+
     rag_service.initialize_organization_store(org.id)
     
     return org
@@ -74,8 +74,7 @@ def update_config(org_id: int, config_in: schemas.OrganizationConfigBase, db: Se
 
 @router.post("/{org_id}/policies")
 async def upload_policy(org_id: int, file: UploadFile = File(...)):
-    # Verify organization exists
-    # (In a real app, check auth/org ownership here)
+
     
     org_dir = os.path.join("data/policies", str(org_id))
     os.makedirs(org_dir, exist_ok=True)
@@ -84,7 +83,7 @@ async def upload_policy(org_id: int, file: UploadFile = File(...)):
     with open(file_path, "wb") as f:
         f.write(await file.read())
     
-    # Re-initialize vector store
+
     rag_service.initialize_organization_store(org_id)
     
     return {"message": f"Policy {file.filename} uploaded and indexed successfully"}

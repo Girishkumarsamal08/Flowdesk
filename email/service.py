@@ -12,9 +12,7 @@ def poll_for_new_emails():
     """
     db = SessionLocal()
     try:
-        # Example: Find organization by recipient address
-        # recipient = "support@apple.com"
-        # org = db.query(Organization).filter(Organization.domain == "apple.com").first()
+
         pass
     finally:
         db.close()
@@ -27,7 +25,7 @@ def send_reply_email(organization_id: int, to_address: str, subject: str, conten
     try:
         config = db.query(OrganizationConfig).filter(OrganizationConfig.organization_id == organization_id).first()
         from_email = config.support_email if config and config.support_email else "support@flowdesk.ai"
-        # SMTP logic here using from_email...
+
         print(f"Sending email from {from_email} to {to_address} (Org {organization_id})")
     finally:
         db.close()

@@ -7,7 +7,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 class RAGService:
     def __init__(self, base_policies_dir: str = "data/policies"):
         self.base_policies_dir = base_policies_dir
-        # Using a small, efficient model suitable for a demo
+
         self.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         self.vector_stores = {} # organization_id -> FAISS instance
 
@@ -21,13 +21,12 @@ class RAGService:
         org_dir = self._get_org_policies_dir(organization_id)
         if not os.path.exists(org_dir):
             os.makedirs(org_dir, exist_ok=True)
-            # Create a dummy file if empty so loader doesn't fail
+
             dummy_path = os.path.join(org_dir, "default_policy.txt")
             if not os.listdir(org_dir):
                 with open(dummy_path, "w") as f:
                     f.write("Welcome to our support. We are here to help you.")
 
-        # Load documents
         loader = DirectoryLoader(org_dir, glob="*.txt", loader_cls=TextLoader)
         documents = loader.load()
         
@@ -35,11 +34,10 @@ class RAGService:
             print(f"No policy documents found for Organization {organization_id}.")
             return
 
-        # Split documents
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
         docs = text_splitter.split_documents(documents)
         
-        # Create vector store
+
         self.vector_stores[organization_id] = FAISS.from_documents(docs, self.embeddings)
         print(f"Initialized FAISS vector store for Organization {organization_id} with {len(docs)} chunks.")
 
@@ -55,5 +53,4 @@ class RAGService:
         context = "\n".join([doc.page_content for doc in docs])
         return context
 
-# Singleton instance
 rag_service = RAGService()

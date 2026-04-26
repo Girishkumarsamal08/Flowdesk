@@ -22,7 +22,6 @@ def login(login_data: schemas.LoginRequest, db: Session = Depends(get_db)):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-# Mock storage for reset codes (In production, use Redis or DB with TTL)
 reset_codes = {}
 
 @router.post("/forgot-password/request")
@@ -32,7 +31,7 @@ def request_reset(data: dict, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="Email not found")
     
-    # Generate unique code (For demo, we use '123456')
+
     code = "123456"
     reset_codes[email] = code
     print(f"DEBUG: Reset code for {email} is {code}")
@@ -63,11 +62,11 @@ def reset_password(data: dict, db: Session = Depends(get_db)):
     user.hashed_password = get_password_hash(new_password)
     db.commit()
     
-    # Clear the code
+
     del reset_codes[email]
     return {"message": "Password changed successfully"}
 
 @router.get("/me", response_model=schemas.User)
 def get_me(db: Session = Depends(get_db)):
-    # This will be secured in the next step with a dependency
+
     pass

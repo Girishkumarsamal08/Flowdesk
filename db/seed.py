@@ -3,13 +3,13 @@ from db.models import Order
 import datetime
 
 def seed():
-    # Recreate tables with new schema
+
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     
     db = SessionLocal()
     
-    # Add some mock orders
+
     mock_orders = [
         Order(customer_email="angry@example.com", product_name="Premium Coffee Machine", status="Delivered"),
         Order(customer_email="common@example.com", product_name="Wireless Keyboard", status="Shipped"),
