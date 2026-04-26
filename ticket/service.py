@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from db.session import SessionLocal
-from db.models import Ticket, Message, SenderType, TicketStatus, Priority, Order
-from services.ai_service import ai_service
+from db.models import Ticket, Message, SenderType, TicketStatus, Priority, Order, OrganizationConfig
+from ai.service import ai_service
 from core.config import settings
 from core.websocket_manager import manager
 import asyncio
@@ -9,9 +9,8 @@ import datetime
 
 async def verify_order_background(ticket_id: int):
     """
-    Simulated 'Crawn' Job (Background task) to verify if customer has an order.
+    Simulated 'Crawn' Job to verify if customer has an order within the organization.
     """
-    # Simulate processing time for the agent to 'look up' the data
     await asyncio.sleep(2)
     
     db = SessionLocal()
@@ -21,14 +20,17 @@ async def verify_order_background(ticket_id: int):
             return
             
         customer_email = ticket.customer.email
-        # Check if an order exists for this email
-        order = db.query(Order).filter(Order.customer_email == customer_email).first()
+        # Check if an order exists for this email WITHIN the same organization
+        order = db.query(Order).filter(
+            Order.customer_email == customer_email,
+            Order.organization_id == ticket.organization_id
+        ).first()
         
         if order:
             ticket.is_verified = 1
-            # Add a system message about the successful verification
             verification_msg = Message(
                 ticket_id=ticket.id,
+                organization_id=ticket.organization_id,
                 sender_type=SenderType.SYSTEM,
                 content=f"Verification Agent: Success. Verified order found for {customer_email}. Product: {order.product_name}. Status: {order.status}."
             )
@@ -36,6 +38,7 @@ async def verify_order_background(ticket_id: int):
             ticket.is_verified = 0
             verification_msg = Message(
                 ticket_id=ticket.id,
+                organization_id=ticket.organization_id,
                 sender_type=SenderType.SYSTEM,
                 content=f"Verification Agent: No order found for {customer_email} in our records."
             )
@@ -43,11 +46,7 @@ async def verify_order_background(ticket_id: int):
         db.add(verification_msg)
         db.commit()
         
-        # Broadcast the update so the dashboard/detail view updates live
         await manager.broadcast({"event": "ticket_updated", "ticket_id": ticket_id, "is_verified": bool(ticket.is_verified)})
-        
-        # Now that verification is done, proceed to generate the AI response
-        # The AI will now have the system message in history to know whether to trust the customer
         await process_ai_reply(ticket_id)
         
     finally:
@@ -62,46 +61,68 @@ async def process_customer_message(ticket_id: int):
         ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
         if not ticket: return
 
+        # Load Organization Config
+        config = db.query(OrganizationConfig).filter(OrganizationConfig.organization_id == ticket.organization_id).first()
+        if not config:
+            # Create default config if missing
+            config = OrganizationConfig(organization_id=ticket.organization_id)
+            db.add(config)
+            db.commit()
+            db.refresh(config)
+
         # Get latest message
         latest_msg = db.query(Message).filter(Message.ticket_id == ticket_id).order_by(Message.id.desc()).first()
         if not latest_msg or latest_msg.sender_type != SenderType.CUSTOMER:
             return
 
-        # 1. Analyze sentiment immediately for prioritization
+        # 1. Analyze sentiment
         sentiment = ai_service.analyze_sentiment(latest_msg.content)
         latest_msg.sentiment = sentiment
         db.commit()
 
-        # 2. Check 5-message Escalation Rule
-        # Count only CUSTOMER messages
+        # 2. Check Escalation Rules
         customer_msg_count = db.query(Message).filter(
             Message.ticket_id == ticket_id, 
             Message.sender_type == SenderType.CUSTOMER
         ).count()
 
-        # 2. Check 5-message Escalation Rule (Mentor Requirement)
         needs_escalation = False
-        if customer_msg_count >= 5:
+        escalation_reason = []
+        
+        # Rule A: Reply count limit reached
+        if customer_msg_count >= config.max_reply_count:
+            needs_escalation = True
+            escalation_reason.append(f"Max replies ({config.max_reply_count}) exceeded")
+        
+        # Rule B: Critical keywords (Advanced Escalation)
+        critical_keywords = ["lawyer", "sue", "legal", "fraud", "scam"]
+        if any(kw in latest_msg.content.lower() for kw in critical_keywords):
             needs_escalation = True
             ticket.priority = Priority.HIGH
-        elif sentiment == "negative":
-            # Just bump priority, don't escalate yet until 5 messages
+            escalation_reason.append("Critical keywords detected")
+
+        # Rule C: Sentiment threshold
+        if sentiment == "negative":
             ticket.priority = Priority.HIGH
+            # Optional: compare against config.sentiment_threshold if it were numeric
+            needs_escalation = True
+            escalation_reason.append("Negative sentiment detected")
             
         if needs_escalation:
             ticket.status = TicketStatus.ESCALATED
             ticket.priority = Priority.HIGH
             
-            # Generate summary for the agent immediately
+            # Generate summary for the agent
             history_msgs = db.query(Message).filter(Message.ticket_id == ticket_id).order_by(Message.created_at.asc()).all()
             history_str = "\n".join([f"{m.sender_type.value}: {m.content}" for m in history_msgs])
             ticket.summary = ai_service.summarize_thread(history_str)
             
-            # System message notifying customer of escalation
             escalation_msg = Message(
                 ticket_id=ticket.id,
-                sender_type=SenderType.AI, # We let the AI sign off
-                content="I've reached the limit of my expertise on this specific issue. I've escalated your ticket to my human supervisor who will prioritize this and help you further."
+                organization_id=ticket.organization_id,
+                sender_type=SenderType.AI,
+                content="I've reached the limit of my expertise on this specific issue. I've escalated your ticket to my human supervisor who will prioritize this and help you further.",
+                reasoning=f"Escalation triggered: {', '.join(escalation_reason)}"
             )
             db.add(escalation_msg)
             db.commit()
@@ -111,21 +132,46 @@ async def process_customer_message(ticket_id: int):
 
         # 3. Handle First Message vs Follow-up
         if customer_msg_count == 1:
-            # First message: Send confirmation and trigger background verification "cron" job
+            from services.email.service import email_service
+            
             confirmation_msg = Message(
                 ticket_id=ticket.id,
+                organization_id=ticket.organization_id,
                 sender_type=SenderType.SYSTEM,
-                content="Auto-Response: We have received your query. Our Agentic AI is currently verifying your order details and reviewing company policy. Please wait a moment..."
+                content="Auto-Response: We have received your query. Our Agentic AI is currently verifying your details and reviewing company policy. Please wait a moment..."
             )
             db.add(confirmation_msg)
             db.commit()
             
-            await manager.broadcast({"event": "message_added", "ticket_id": ticket_id})
+            # Send Email to Customer with Tracking Token
+            smtp_config = {
+                "email": ticket.organization.smtp_email,
+                "password": ticket.organization.smtp_password
+            }
             
-            # Trigger background verification (Simulated Cron/Agent Job)
+            tracking_link = f"{settings.BASE_URL}/support/track/{ticket.token}" if hasattr(settings, 'BASE_URL') else f"/support/track/{ticket.token}"
+            
+            email_body = f"""We have received your support request regarding: {ticket.title}.
+            
+Your unique tracking token is: {ticket.token}
+
+You can track the live progress of your request at any time here:
+{tracking_link}
+
+Our AI Agent is currently reviewing your request against company policies. A specialist will be notified if further assistance is required."""
+
+            email_service.send_customer_email(
+                recipient=ticket.customer.email,
+                subject=f"Request Received: {ticket.title} [Token: {ticket.token}]",
+                body=email_body,
+                company_name=ticket.organization.name,
+                customer_name=ticket.customer.name or "Customer",
+                smtp_config=smtp_config
+            )
+            
+            await manager.broadcast({"event": "message_added", "ticket_id": ticket_id})
             asyncio.create_task(verify_order_background(ticket_id))
         else:
-            # Follow-up message: Just generate AI reply directly (assuming verified already)
             await process_ai_reply(ticket_id)
 
     finally:
@@ -133,7 +179,7 @@ async def process_customer_message(ticket_id: int):
 
 async def process_ai_reply(ticket_id: int):
     """
-    Sub-task to generate the actual RAG-based AI reply.
+    Generate the actual RAG-based AI reply using organization context.
     """
     db = SessionLocal()
     try:
@@ -141,20 +187,28 @@ async def process_ai_reply(ticket_id: int):
         if not ticket or ticket.status == TicketStatus.ESCALATED:
             return
 
-        # Fetch history (including the verification system message)
+        config = db.query(OrganizationConfig).filter(OrganizationConfig.organization_id == ticket.organization_id).first()
+        tone = config.response_tone if config else "professional"
+
         history_msgs = db.query(Message).filter(Message.ticket_id == ticket_id).order_by(Message.created_at.asc()).limit(15).all()
         history_str = "\n".join([f"{m.sender_type.value}: {m.content}" for m in history_msgs[:-1]])
         
-        # The AI's prompt will now see the Verification message in history!
         latest_msg = history_msgs[-1]
         if latest_msg.sender_type != SenderType.CUSTOMER: return
 
-        ai_reply_content = ai_service.generate_reply(customer_query=latest_msg.content, history=history_str)
+        ai_result = ai_service.generate_reply(
+            organization_id=ticket.organization_id,
+            customer_query=latest_msg.content, 
+            history=history_str,
+            tone=tone
+        )
         
         ai_msg = Message(
             ticket_id=ticket.id,
+            organization_id=ticket.organization_id,
             sender_type=SenderType.AI,
-            content=ai_reply_content
+            content=ai_result["content"],
+            reasoning=ai_result["reasoning"]
         )
         db.add(ai_msg)
         ticket.reply_count += 1

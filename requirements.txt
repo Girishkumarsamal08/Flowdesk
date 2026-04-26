@@ -13,3 +13,8 @@ pydantic-settings
 python-multipart
 faiss-cpu
 sentence-transformers
+typing-extensions>=4.15.0
+python-jose[cryptography]
+passlib[bcrypt]
+python-jose[cryptography]
+passlib[bcrypt]

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Track Your Support Request | FLOWDESK{% endblock %}
+
+{% block content %}
+<div style="height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+    <h2 style="margin-bottom: 2rem;">Track Your Request</h2>
+    
+    <div class="card" style="width: 400px;">
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            Enter your 6-digit unique tracking token to check the progress of your issue.
+        </p>
+
+        {% if error %}
+        <div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.8rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.85rem; border: 1px solid rgba(239, 68, 68, 0.2);">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form id="trackForm">
+            <div class="form-group">
+                <input type="text" id="tokenInput" maxlength="6" placeholder="e.g. 123456" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px; font-weight: 700;" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Track Status</button>
+        </form>
+    </div>
+    
+    <a href="/" style="margin-top: 2rem; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem;">&larr; Back to Home</a>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('trackForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const token = document.getElementById('tokenInput').value;
+        if (token.length === 6) {
+            window.location.href = `/support/track/${token}`;
+        } else {
+            alert('Please enter a valid 6-digit token.');
+        }
+    });
+</script>
+{% endblock %}

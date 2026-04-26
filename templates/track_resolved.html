@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Issue Resolved | FLOWDESK{% endblock %}
+
+{% block content %}
+<div style="height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+    <div style="font-size: 4rem; margin-bottom: 1.5rem;">✅</div>
+    <h1 style="margin-bottom: 1rem;">Your issue has been resolved</h1>
+    <p style="font-size: 1.1rem; color: var(--text-secondary); max-width: 500px; margin-bottom: 2rem;">
+        Thank you for your patience. Our support team has successfully addressed your request (Ticket #{{ ticket.id }}). 
+        The tracking token <strong>{{ ticket.token }}</strong> is now closed.
+    </p>
+    
+    <div style="display: flex; gap: 1rem;">
+        <a href="/" class="btn" style="border: 1px solid var(--glass-border);">Back to Home</a>
+        <a href="/support" class="btn btn-primary">Submit New Request</a>
+    </div>
+</div>
+{% endblock %}

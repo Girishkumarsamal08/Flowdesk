@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 4rem auto;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">Onboard your Company</h1>
+        <p style="color: var(--text-secondary);">Start automating your customer support in minutes.</p>
+    </div>
+    
+    <div class="card">
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="name">Company Name</label>
+                <input type="text" id="name" required placeholder="Acme Corp">
+            </div>
+            <div class="form-group">
+                <label for="domain">Company Domain</label>
+                <input type="text" id="domain" required placeholder="acme.com">
+            </div>
+            <div class="form-group">
+                <label for="support_email">Admin/Support Email</label>
+                <input type="email" id="support_email" required placeholder="support@acme.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Admin Password</label>
+                <input type="password" id="password" required placeholder="••••••••">
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%;">Create My Workspace</button>
+            </div>
+        </form>
+    </div>
+    
+    <p style="text-align: center; margin-top: 1.5rem; color: var(--text-secondary);">
+        Already have an account? <a href="/login" style="color: var(--primary);">Login here</a>
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const originalText = btn.innerText;
+        btn.innerText = 'Initializing Workspace...';
+        btn.disabled = true;
+
+        const payload = {
+            name: document.getElementById('name').value,
+            domain: document.getElementById('domain').value,
+            support_email: document.getElementById('support_email').value,
+            password: document.getElementById('password').value
+        };
+
+        try {
+            const response = await fetch('/api/orgs/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                btn.innerText = 'Success! Redirecting...';
+                // Automatically log them in or redirect to login
+                setTimeout(() => window.location.href = '/login', 1500);
+            } else {
+                const error = await response.json();
+                alert(error.detail || 'Registration failed');
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Network error');
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    });
+</script>
+{% endblock %}

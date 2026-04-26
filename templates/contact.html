@@ -2,7 +2,7 @@
 
 {% block content %}
 <div style="max-width: 600px; margin: 4rem auto;">
-    <h1 style="text-align: center; margin-bottom: 2rem; font-size: 2.5rem;">How can we help?</h1>
+    <h1 id="formHeader" style="text-align: center; margin-bottom: 2rem; font-size: 2.5rem;">Get Support</h1>
     <div class="card">
         <form id="contactForm">
             <div class="form-group">
@@ -38,6 +38,7 @@
         btn.disabled = true;
 
         const payload = {
+            organization_id: parseInt("{{ org_id }}"),
             title: document.getElementById('title').value,
             customer_email: document.getElementById('email').value,
             customer_name: document.getElementById('name').value,
@@ -53,20 +54,29 @@
 
             if (response.ok) {
                 const data = await response.json();
-                btn.innerText = 'Success!';
-                btn.style.background = 'var(--success)';
-                
-                setTimeout(() => {
-                    window.location.href = `/dashboard/ticket/${data.id}`;
-                }, 1000);
+                document.getElementById('formHeader').innerText = 'Request Logged';
+                document.querySelector('.card').innerHTML = `
+                    <div style="text-align: center; padding: 3rem 2rem;">
+                        <h2 style="margin-bottom: 1rem; color: var(--success);">Request Received</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
+                            Your support request has been logged successfully.<br>
+                            Tracking Token: <strong style="font-size: 1.2rem; color: white;">#${data.token}</strong>
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <a href="/support/track/${data.token}" class="btn btn-primary" style="padding: 0.8rem 2rem;">Track My Request</a>
+                            <a href="/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem;">Return to Home</a>
+                        </div>
+                    </div>
+                `;
             } else {
-                alert('Error creating ticket');
+                const errorData = await response.json();
+                alert('Server Error (' + response.status + '): ' + (errorData.detail || 'Unknown error'));
                 btn.innerText = originalText;
                 btn.disabled = false;
             }
         } catch (err) {
             console.error(err);
-            alert('Network error');
+            alert('Connection Failed: ' + err.message + '. Please ensure the server is running on port 8000.');
             btn.innerText = originalText;
             btn.disabled = false;
         }

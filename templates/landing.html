@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}FLOWDESK | Automating Customer Support{% endblock %}
+
+{% block content %}
+<div
+    style="height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+    <div class="hero-container">
+        <h1 class="hero-title"><span>F</span><span>L</span><span>O</span><span>W</span><span>D</span><span>E</span><span>S</span><span>K</span></h1>
+        <p class="hero-subtitle-reveal">Automating Support</p>
+    </div>
+    <p style="font-size: 1.5rem; color: var(--text-secondary); max-width: 600px; margin-bottom: 3rem;">
+        “Automating Customer Support from Query to Resolution”
+    </p>
+
+    <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem;">
+        <a href="/company/auth" class="btn-outline" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Get Started as
+            Company</a>
+        <a href="/support" class="btn-outline"
+            style="padding: 1rem 2.5rem; font-size: 1.1rem;">Submit a Support Request</a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Already complained the issue? <a href="/support/track"
+                style="color: var(--accent); text-decoration: none; font-weight: 600;">I have my token number</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

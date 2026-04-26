@@ -1,74 +1,78 @@
-# Flowdesk - AI-Powered Customer Support Platform
+# Flowdesk - Multi-Tenant AI Support SaaS
 
-Flowdesk is an autonomous, agentic customer support platform built to handle customer queries using Artificial Intelligence, significantly reducing the workload on human agents.
+Flowdesk is a universal, multi-tenant AI-powered customer support platform. It allows any organization to onboard, upload their specific policy documents, and instantly deploy an autonomous AI agent to handle their customer queries.
 
-## How It Works
+## 🚀 Key Features
 
-1. **Customer Submits a Ticket**: A customer goes to the `Contact Us` page and submits an issue (e.g., "What is your refund policy?").
-2. **AI Processing (RAG Engine)**: Behind the scenes, the FastAPI backend sends this ticket to our AI engine.
-3. **Knowledge Retrieval**: The AI uses **Retrieval-Augmented Generation (RAG)** to read the company's internal policy documents (`.txt` files located in the `data/` folder).
-4. **Intelligent Response**: The AI (powered by LangChain & Llama 3 via Groq) formulates a factual answer based *only* on the company policies and automatically replies to the customer.
-5. **Sentiment Analysis & Escalation**: The AI constantly monitors the conversation. If the customer's sentiment turns **negative**, or if the bot has tried to help multiple times without success, the system automatically **Escalates** the ticket to a human agent.
-6. **Agent Dashboard**: Human support agents log into the Flowdesk dashboard to view all tickets, monitor bot conversations, and take over escalated tickets.
+- **Multi-Tenant Architecture**: Isolate data (tickets, customers, policies) between different organizations.
+- **Organization-Specific RAG**: AI agents only use the specific policy documents uploaded by their respective company.
+- **Dynamic Escalation Rules**: Configure `max_reply_count` and `sentiment_threshold` per organization.
+- **Advanced Sentiment Analysis**: Real-time monitoring of customer frustration for immediate human intervention.
+- **Modular Design**: Clean separation of concerns across `ai`, `org`, `ticket`, and `email` modules.
 
-## Tech Stack
-*   **Backend**: Python, FastAPI
-*   **Database**: SQLite via SQLAlchemy ORM
-*   **AI / LLM**: LangChain, Groq API (Llama 3), ChromaDB (Vector Database)
-*   **Frontend**: HTML, Vanilla CSS, JavaScript (Jinja2 Templates)
+## 📂 Project Structure
 
----
+```text
+├── ai/                 # RAG logic and AI service
+├── org/                # Organization management and routes
+├── ticket/             # Ticket processing and routing
+├── email/              # Email integration service
+├── core/               # App configuration and WebSocket manager
+├── db/                 # Database models and session management
+├── data/policies/      # Directory for organization policy documents
+├── static/             # Frontend assets (CSS, JS)
+├── templates/          # Jinja2 HTML templates
+└── main.py             # Application entry point
+```
 
-## How to Set Up and Run the Project
+## 🛠️ How to Set Up and Run
 
 1. **Install Dependencies**:
-   Ensure you have Python installed. Open your terminal in the `Flowdesk` folder and run:
    ```bash
    pip install -r requirements.txt
    ```
 
 2. **Set up Environment Variables**:
-   Copy `.env.example` to `.env`:
+   Copy `.env.example` to `.env` and add your `GROQ_API_KEY`.
    ```bash
    cp .env.example .env
    ```
-   Open the `.env` file and add your `GROQ_API_KEY`. You can get a free API key from [console.groq.com](https://console.groq.com).
 
-3. **Start the Application**:
-   Run the FastAPI server:
+3. **Initialize the Database**:
+   This will create the database schema and populate it with a default test organization (`Apple Inc.`).
+   ```bash
+   python init_db.py
+   ```
+
+4. **Start the Application**:
    ```bash
    uvicorn main:app --reload
    ```
 
+## 🖥️ Usage & Demo Flow
+
+### 1. Registering an Organization
+You can register a new company via the API:
+`POST /api/orgs/` with `{ "name": "Company Name", "domain": "company.com" }`
+
+### 2. Uploading Policies
+Upload policy `.txt` files for a specific organization:
+`POST /api/orgs/{org_id}/policies` (Select a file to upload)
+
+### 3. Customer Interaction (Public Form)
+Navigate to: `http://localhost:8000/?org_id=1`
+Submit a ticket to see the AI agent in action using Org 1's specific policies.
+
+### 4. Agent Dashboard
+Navigate to: `http://localhost:8000/dashboard?org_id=1`
+Monitor tickets, view AI-generated summaries for escalated cases, and take over conversations.
+
+### 5. Live Analytics
+Navigate to: `http://localhost:8000/analytics?org_id=1`
+View real-time ticket distribution, volume, and customer sentiment metrics.
+
 ---
 
-## How to Demonstrate This Project in an Interview
+## 🎯 Interview Pitch
 
-When showcasing this to an HR or Technical Interviewer, follow this script and visual flow:
-
-### Step 1: The Pitch
-*   **You say:** *"Let me show you Flowdesk. I built this because customer support teams waste hours answering the exact same questions. Flowdesk uses AI to read company policies and automatically resolve 80% of routine tickets, only escalating complex or angry customers to human agents."*
-
-### Step 2: The Customer Experience
-1. Open your browser and navigate to exactly: `http://localhost:8000/contact` (This is the customer view).
-2. Fill out the form with a straightforward question.
-   *   **Name:** John
-   *   **Email:** john@example.com
-   *   **Subject:** Return request
-   *   **Message:** "Hi, I bought a shirt 15 days ago and I want to return it. What is your refund policy?"
-3. Click **Submit Ticket**. The page will route you to the specific ticket view.
-4. **You tell the interviewer:** *"As soon as the customer hits submit, the AI processes the message, searches our company's `return_policy.txt` using RAG, and instantly generates a factual reply."* Refresh the page to show the AI's polite and accurate response.
-
-### Step 3: The Human Agent Dashboard
-1. Now, navigate to: `http://localhost:8000/dashboard`
-2. **You tell the interviewer:** *"This is the internal dashboard for the support team. Notice how all the tickets are categorized by Open, Escalated, and Closed statuses."*
-3. Show them that they can click into the ticket and read the entire chat history between the Bot and the Customer.
-
-### Step 4: The Intelligent Escalation Demo (The "Wow" Factor!)
-1. Go back to the ticket view where you were chatting as the customer.
-2. Send an angry message, such as: *"You guys are terrible! Your AI isn't helping me, I want to talk to a human right now, this is so frustrating!"*
-3. Submit the message.
-4. Go back to the `http://localhost:8000/dashboard`.
-5. **You tell the interviewer:** *"The AI runs real-time sentiment analysis on every message. Because I just sent an angry message, the system detected a Negative sentiment and immediately flagged this ticket as 'ESCALATED'. Now, a human agent knows exactly which ticket they need to prioritize."*
-
-This flow proves you understand **User Experience, Backend Engineering, and Applied Artificial Intelligence**!
+*"I transformed Flowdesk into a full-scale SaaS platform. It's built with a multi-tenant architecture where every organization has its own isolated data and custom-trained AI agent. I implemented a modular backend using FastAPI and LangChain, featuring a dynamic RAG system that loads company policies on-the-fly. The system autonomously handles support queries but uses real-time sentiment analysis and keyword detection to escalate complex issues to human agents, ensuring high-quality support at scale."*

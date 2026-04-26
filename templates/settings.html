@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Flowdesk | Company Settings{% endblock %}
+
+{% block content %}
+<div class="agent-nav">
+    <div class="nav-links">
+        <a href="/company/dashboard">Tickets</a>
+        <a href="/analytics">Analytics</a>
+        <a href="/company/settings" class="active">Settings</a>
+        <a href="/company/auth">Logout</a>
+    </div>
+</div>
+
+<div style="max-width: 600px;">
+    <h1 style="margin-bottom: 2rem;">Company Settings</h1>
+    
+    <div class="card">
+        <h3 style="margin-bottom: 1.5rem;">Email Configuration</h3>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 2rem;">
+            Configure your own Gmail SMTP to send professional notifications to your customers from your own brand.
+        </p>
+
+        <form id="settingsForm">
+            <div class="form-group">
+                <label for="smtp_email">Gmail Address</label>
+                <input type="email" id="smtp_email" placeholder="support@company.com" value="{{ org.smtp_email or '' }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="smtp_password">Gmail App Password</label>
+                <div style="position: relative;">
+                    <input type="password" id="smtp_password" placeholder="•••• •••• •••• ••••" value="{{ org.smtp_password or '' }}" style="padding-right: 3.5rem;" required>
+                    <button type="button" onclick="togglePassword('smtp_password', this)" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0;">
+                        <svg class="eyeClosed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 100%; height: 100%;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                        <svg class="eyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 100%; height: 100%; display: none;">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                    Generate an <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color: var(--accent);">App Password</a> in your Google Account.
+                </p>
+            </div>
+
+            <div style="margin-top: 3rem;">
+                <button type="submit" id="saveBtn" class="btn btn-primary" style="width: 100%;">Save & Return to Dashboard</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function togglePassword(id, btn) {
+        const input = document.getElementById(id);
+        const closedIcon = btn.querySelector('.eyeClosed');
+        const openIcon = btn.querySelector('.eyeOpen');
+        if (input.type === 'password') {
+            input.type = 'text';
+            closedIcon.style.display = 'none'; openIcon.style.display = 'block';
+        } else {
+            input.type = 'password';
+            closedIcon.style.display = 'block'; openIcon.style.display = 'none';
+        }
+    }
+
+    const settingsForm = document.getElementById('settingsForm');
+    const saveBtn = document.getElementById('saveBtn');
+
+    settingsForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        saveBtn.innerText = 'Saving Configuration...';
+        saveBtn.disabled = true;
+
+        const payload = {
+            smtp_email: document.getElementById('smtp_email').value,
+            smtp_password: document.getElementById('smtp_password').value
+        };
+
+        try {
+            const res = await fetch('/api/orgs/{{ org.id }}/settings', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                // AUTO REDIRECT BACK TO DASHBOARD
+                window.location.href = '/company/dashboard';
+            } else {
+                alert('Failed to update settings.');
+                saveBtn.innerText = 'Save & Return to Dashboard';
+                saveBtn.disabled = false;
+            }
+        } catch (err) {
+            alert('Network error.');
+            saveBtn.disabled = false;
+        }
+    });
+</script>
+{% endblock %}

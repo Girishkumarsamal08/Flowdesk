@@ -7,6 +7,15 @@
 {% endblock %}
 
 {% block content %}
+<div class="agent-nav">
+    <div class="nav-links">
+        <a href="/company/dashboard">Tickets</a>
+        <a href="/analytics" class="active">Analytics</a>
+        <a href="/company/settings">Settings</a>
+        <a href="/company/auth">Logout</a>
+    </div>
+</div>
+
 <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
     <div>
         <h1 style="margin-bottom: 0.5rem;">System Analytics</h1>
@@ -47,9 +56,9 @@
     async function loadCharts() {
         // Fetch Data
         const [statusRes, sentimentRes, volumeRes] = await Promise.all([
-            fetch('/api/analytics/status'),
-            fetch('/api/analytics/sentiment'),
-            fetch('/api/analytics/volume')
+            fetch('/api/analytics/status?organization_id={{ org_id }}'),
+            fetch('/api/analytics/sentiment?organization_id={{ org_id }}'),
+            fetch('/api/analytics/volume?organization_id={{ org_id }}')
         ]);
 
         const statusData = await statusRes.json();
