@@ -1,0 +1,12 @@
+{
+  "name": "flowdesk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Flowdesk - Automating Customer Support",
+  "scripts": {
+    "dev:frontend": "pnpm --prefix frontend run dev",
+    "dev:backend": "pnpm --prefix backend run dev",
+    "install:all": "pnpm --prefix frontend install && pnpm --prefix backend install",
+    "lint": "pnpm --prefix frontend run lint"
+  }
+}

@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  passwordHash    String
+  companyName     String
+  category        String
+  domain          String?
+  goodsType       String?
+  deliveryMethod  String?
+  deliveryPartner String?
+  refundPolicy    String?
+  productGuide    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  companyPolicy   String?
+  infoUrl         String?
+  inquiries       Inquiry[]
+}
+
+model Inquiry {
+  id        String   @id @default(uuid())
+  companyId String
+  email     String
+  subject   String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  company   Company  @relation(fields: [companyId], references: [id])
+}

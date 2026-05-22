@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: flowdesk_postgres
+    environment:
+      POSTGRES_USER: flowdesk_master
+      POSTGRES_PASSWORD: fd_admin_secret_99
+      POSTGRES_DB: flowdesk_prod
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: flowdesk_redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # Kafka will be added later when building the messaging/queue system
+  # kafka:
+  #   image: apache/kafka:latest
+  #   container_name: flowdesk_kafka
+  #   ...
+
+volumes:
+  postgres_data:
+  redis_data:
