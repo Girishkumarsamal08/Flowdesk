@@ -3,35 +3,103 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model Company {
-  id              String    @id @default(uuid())
-  email           String    @unique
+  id              String       @id @default(uuid())
+  email           String       @unique
   passwordHash    String
   companyName     String
-  category        String
+  category        String       // e.g. SaaS, Hosting, Ecommerce, FinTech, etc.
   domain          String?
-  goodsType       String?
-  deliveryMethod  String?
-  deliveryPartner String?
-  refundPolicy    String?
-  productGuide    String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  companyPolicy   String?
-  infoUrl         String?
+  supportEmail    String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // API Config
+  apiBaseUrl      String?
+  apiAuthType     String?      // "none", "bearer", "api_key", "custom_headers"
+  apiAuthToken    String?
+  apiHeaders      Json?        // Key-value pairs for headers
+
+  // Swagger schema and parsed endpoints
+  swaggerSchema   String?      // Raw Swagger JSON/YAML
+  parsedEndpoints Json?        // Parsed endpoint registry list
+
+  // Business Concept Mappings
+  dataMappings    Json?        // e.g. { "Bandwidth Usage": "/user/usage" }
+
+  // Relations
   inquiries       Inquiry[]
+  kbDocuments     KBDocument[]
+  apiCallLogs     APICallLog[]
+}
+
+model KBDocument {
+  id         String   @id @default(uuid())
+  companyId  String
+  fileName   String
+  content    String
+  fileType   String   // "pdf", "txt", "md"
+  createdAt  DateTime @default(now())
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 model Inquiry {
-  id        String   @id @default(uuid())
-  companyId String
-  email     String
-  subject   String
-  status    String   @default("pending")
-  createdAt DateTime @default(now())
-  company   Company  @relation(fields: [companyId], references: [id])
+  id            String           @id @default(uuid())
+  companyId     String
+  email         String
+  subject       String
+  status        String           @default("pending") // "pending", "resolved_ai", "resolved_human", "escalated"
+  priority      String           @default("medium")
+  sentiment     String           @default("neutral")
+  confidence    Float            @default(0.0)
+  assignedTo    String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  
+  company       Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  messages      Message[]
+  apiCallLogs   APICallLog[]
+  reasoningLogs AIReasoningLog[]
 }
+
+model Message {
+  id        String   @id @default(uuid())
+  inquiryId String
+  sender    String   // "customer", "ai", "human"
+  content   String
+  createdAt DateTime @default(now())
+  inquiry   Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+}
+
+model APICallLog {
+  id           String   @id @default(uuid())
+  companyId    String
+  inquiryId    String?
+  endpoint     String
+  method       String
+  requestBody  Json?
+  responseBody Json?
+  statusCode   Int
+  timestamp    DateTime @default(now())
+
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  inquiry      Inquiry? @relation(fields: [inquiryId], references: [id], onDelete: SetNull)
+}
+
+model AIReasoningLog {
+  id              String   @id @default(uuid())
+  inquiryId       String
+  retrievedChunks Json?
+  confidenceScore Float
+  classification  String
+  decisionReason  String
+  apiCallTrace    Json?
+  timestamp       DateTime @default(now())
+
+  inquiry         Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+}
+

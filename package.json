@@ -6,7 +6,13 @@
   "scripts": {
     "dev:frontend": "pnpm --prefix frontend run dev",
     "dev:backend": "pnpm --prefix backend run dev",
+    "build:frontend": "pnpm --prefix frontend run build",
+    "build:backend": "pnpm --prefix backend run build",
+    "build": "pnpm build:backend && pnpm build:frontend",
+    "start:frontend": "pnpm --prefix frontend run start",
+    "start:backend": "pnpm --prefix backend run start",
     "install:all": "pnpm --prefix frontend install && pnpm --prefix backend install",
+    "postinstall": "pnpm install:all",
     "lint": "pnpm --prefix frontend run lint"
   }
 }
