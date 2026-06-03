@@ -1,8 +1,10 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import companyRoutes from './routes/company.js';
-import chatRoutes from './routes/chat.js';
+import companyRoutes from './routes/company-new.js';
+import chatRoutes from './routes/chat-new.js';
+import adminRoutes from './routes/admin.js';
+import inquiryRoutes from './routes/inquiries.js';
 import swaggerRoutes from './routes/swagger.js';
 import mockCompanyRoutes from './routes/mock-company.js';
 
@@ -24,8 +26,11 @@ app.get('/health', (_req, res) => {
 });
 
 // Routes
+app.get('/api/companies/test-simple', (req, res) => res.json({ message: 'simple route works' }));
 app.use('/api/companies', companyRoutes);
 app.use('/api', chatRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/swagger', swaggerRoutes);
 app.use('/api/mock-company', mockCompanyRoutes);
 

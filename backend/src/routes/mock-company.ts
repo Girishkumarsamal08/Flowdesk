@@ -23,7 +23,7 @@ const mockCustomers: Record<string, any> = {
   },
   'premium_user@influcraft.com': {
     id: 'cust_02',
-    email: 'premium_user@influcraft.com',
+    email: 'premium_user@influcrat.com',
     name: 'Jane Smith',
     tier: 'premium',
     status: 'active',

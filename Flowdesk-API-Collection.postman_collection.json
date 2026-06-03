@@ -1,0 +1,435 @@
+{
+  "info": {
+    "name": "Flowdesk Complete API Collection",
+    "description": "Complete API testing collection for Flowdesk Backend - All endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "AUTHENTICATION",
+      "item": [
+        {
+          "name": "1. Register Company",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@techcorp.com\",\n  \"password\": \"SecurePass123!\",\n  \"companyName\": \"Tech Corp Solutions\",\n  \"category\": \"SaaS\",\n  \"domain\": \"techcorp.com\",\n  \"supportEmail\": \"support@techcorp.com\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5001/api/companies/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "companies", "register"]
+            }
+          }
+        },
+        {
+          "name": "2. Login Company",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@techcorp.com\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5001/api/companies/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "companies", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "COMPANY PROFILE",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {
+              "raw": "http://localhost:5001/api/companies/me",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "companies", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get Company Details (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/api/companies/{{companyId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "companies", "{{companyId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Company Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"Tech Corp Solutions Updated\",\n  \"supportEmail\": \"support-new@techcorp.com\",\n  \"category\": \"SaaS\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5001/api/companies/profile",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "companies", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update API Configuration",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiBaseUrl\": \"https://api.techcorp.com\",\n  \"apiAuthType\": \"bearer\",\n  \"apiAuthToken\": \"sk_live_abcd1234efgh5678\",\n  \"apiHeaders\": {\n    \"X-Custom-Header\": \"custom-value\"\n  },\n  \"dataMappings\": {\n    \"customerId\": \"customer_id\",\n    \"email\": \"email_address\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5001/api/companies/config",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "companies", "config"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "DOCUMENTS",
+      "item": [
+        {
+          "name": "Get All Documents",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {
+              "raw": "http://localhost:5001/api/companies/documents?page=1&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "companies", "documents"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "10"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Document By ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {
+              "raw": "http://localhost:5001/api/companies/documents/{{documentId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "companies", "documents", "{{documentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Upload Document",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "file", "type": "file", "src": ""}
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5001/api/companies/upload",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "companies", "upload"]
+            }
+          }
+        },
+        {
+          "name": "Delete Document",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {
+              "raw": "http://localhost:5001/api/companies/documents/{{documentId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "companies", "documents", "{{documentId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CHAT & CONVERSATIONS",
+      "item": [
+        {
+          "name": "Process Customer Chat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerEmail\": \"john@example.com\",\n  \"message\": \"My website has been down for 2 hours. This is urgent!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5001/api/chat",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "chat"]
+            }
+          }
+        },
+        {
+          "name": "Get Chat History",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {
+              "raw": "http://localhost:5001/api/chat/history?customerEmail=john@example.com",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "chat", "history"],
+              "query": [{"key": "customerEmail", "value": "john@example.com"}]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "INQUIRIES & TICKETS",
+      "item": [
+        {
+          "name": "Get All Inquiries",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {
+              "raw": "http://localhost:5001/api/inquiries?page=1&limit=10&status=open",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "inquiries"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "10"},
+                {"key": "status", "value": "open"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Inquiry By ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {
+              "raw": "http://localhost:5001/api/inquiries/{{inquiryId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "inquiries", "{{inquiryId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Customer Inquiries",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {
+              "raw": "http://localhost:5001/api/inquiries/customer?customerEmail=john@example.com",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "inquiries", "customer"],
+              "query": [{"key": "customerEmail", "value": "john@example.com"}]
+            }
+          }
+        },
+        {
+          "name": "Update Inquiry Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"resolved\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5001/api/inquiries/{{inquiryId}}/status",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "inquiries", "{{inquiryId}}", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "DASHBOARD & ANALYTICS",
+      "item": [
+        {
+          "name": "Get Company Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {
+              "raw": "http://localhost:5001/api/inquiries/dashboard",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "inquiries", "dashboard"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ADMIN APIs",
+      "item": [
+        {
+          "name": "Get All Companies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/api/admin/companies?page=1&limit=10&search=",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "admin", "companies"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "10"},
+                {"key": "search", "value": ""}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Company Admin Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/api/admin/companies/{{companyId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "admin", "companies", "{{companyId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Company Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/api/admin/companies/{{companyId}}/stats",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "admin", "companies", "{{companyId}}", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Platform Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/api/admin/stats",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "admin", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Delete Company",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/api/admin/companies/{{companyId}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["api", "admin", "companies", "{{companyId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "UTILITY",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5001",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "token", "value": "", "description": "JWT token from login response"},
+    {"key": "companyId", "value": "", "description": "Company ID"},
+    {"key": "documentId", "value": "", "description": "Document ID"},
+    {"key": "inquiryId", "value": "", "description": "Inquiry ID"}
+  ]
+}

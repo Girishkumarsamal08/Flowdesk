@@ -318,10 +318,10 @@ router.post('/chat', async (req, res) => {
     }
 
     // Find or create inquiry
-    let inquiry = await prisma.inquiry.findFirst({
+    let inquiry: any = await prisma.inquiry.findFirst({
       where: {
         companyId,
-        email: email || 'anonymous@unknown.com',
+        customerEmail: (email as string) || 'anonymous@unknown.com',
         status: { in: ['pending', 'escalated'] }
       },
       include: { messages: true }
@@ -331,12 +331,16 @@ router.post('/chat', async (req, res) => {
       inquiry = await prisma.inquiry.create({
         data: {
           companyId,
-          email: email || 'anonymous@unknown.com',
-          subject: subject || message.substring(0, 100),
+          customerEmail: (email as string) || 'anonymous@unknown.com',
+          subject: (subject as string) || (message as string).substring(0, 100),
           status: 'pending',
         },
         include: { messages: true }
       });
+    }
+
+    if (!inquiry) {
+      return res.status(500).json({ error: 'Failed to find or create inquiry' });
     }
 
     // Save customer message
@@ -348,7 +352,8 @@ router.post('/chat', async (req, res) => {
       }
     });
 
-    const turnCount = inquiry.messages.filter(m => m.sender === 'customer').length + 1;
+    const messages = inquiry.messages || [];
+    const turnCount = messages.filter((m: any) => m.sender === 'customer').length + 1;
 
     // ---- STAGE 1: Customer Validation ----
     console.log(`[Stage 1] Validating customer: ${email}`);
