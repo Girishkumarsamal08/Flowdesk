@@ -1,5 +1,6 @@
 export const JWT_SECRET = process.env.JWT_SECRET || 'supersecretflowdeskkey';
 export const JWT_EXPIRY = '7d';
+export const ADMIN_SECRET = process.env.ADMIN_SECRET || '';
 
 export const ISSUE_CATEGORIES = [
   'bandwidth_exceeded',

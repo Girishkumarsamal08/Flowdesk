@@ -35,11 +35,18 @@ export class SimpleMemoryVectorStore {
 // Global registry of vector stores mapping companyId -> SimpleMemoryVectorStore
 export const companyVectorStores: Record<string, SimpleMemoryVectorStore> = {};
 
+// Force-invalidate and reload vector store for a company.
+// Call this after any document upload or delete so AI uses fresh data.
+export function invalidateVectorStore(companyId: string) {
+  delete companyVectorStores[companyId];
+  console.log(`[VectorStore] Cache invalidated for company ${companyId}`);
+}
+
 // Helper to load company policies from DB into vector stores on demand
 export async function ensureVectorStoreLoaded(companyId: string) {
   if (!companyVectorStores[companyId]) {
     companyVectorStores[companyId] = new SimpleMemoryVectorStore();
-    
+
     const docs = await prisma.kBDocument.findMany({
       where: { companyId }
     });
@@ -57,8 +64,8 @@ export async function ensureVectorStoreLoaded(companyId: string) {
 
       companyVectorStores[companyId].addDocuments(items);
     });
-    
-    console.log(`Initialized vector store for company ${companyId} with ${docs.length} files.`);
+
+    console.log(`[VectorStore] Loaded ${docs.length} documents for company ${companyId}`);
   }
   return companyVectorStores[companyId];
 }

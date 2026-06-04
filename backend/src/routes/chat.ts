@@ -2,10 +2,12 @@ import express from 'express';
 import { ChatGroq } from '@langchain/groq';
 import { ChatOpenAI } from '@langchain/openai';
 import { PrismaClient, Prisma } from '@prisma/client';
-import { ensureVectorStoreLoaded } from './company.js';
+import { authenticate } from '../middleware/auth.js';
+import { ensureVectorStoreLoaded } from '../utils/vectorStore.js';
 
 const prisma = new PrismaClient();
 const router = express.Router();
+
 
 // AI Provider Selection
 const getLLM = () => {
@@ -292,13 +294,16 @@ function shouldEscalate(confidence: number, turnCount: number, sentiment: string
 
 // ============================================================
 // MAIN CHAT ENDPOINT - Full Orchestration Pipeline
+// Supports both:
+//   - Widget mode: POST body must include companyId (public, no auth needed)
+//   - Dashboard test mode: same, but JWT token is also accepted
 // ============================================================
-router.post('/chat', async (req, res) => {
+router.post('/chat', async (req: any, res) => {
   try {
     const { companyId, email, subject, message } = req.body;
 
     if (!companyId || !message) {
-      return res.status(400).json({ error: 'Missing companyId or message' });
+      return res.status(400).json({ error: 'Missing companyId or message. The widget must send both.' });
     }
 
     if (!process.env.GROQ_API_KEY && !process.env.OPENAI_API_KEY) {
@@ -491,8 +496,8 @@ router.post('/chat', async (req, res) => {
 });
 
 // @route   GET /api/inquiries/:id/reasoning
-// @desc    Get AI reasoning logs for an inquiry (Observability)
-router.get('/inquiries/:id/reasoning', async (req, res) => {
+// @desc    Get AI reasoning logs for an inquiry (Observability) — auth required
+router.get('/inquiries/:id/reasoning', authenticate, async (req: any, res) => {
   try {
     const logs = await prisma.aIReasoningLog.findMany({
       where: { inquiryId: req.params.id },
@@ -516,8 +521,8 @@ router.get('/inquiries/:id/reasoning', async (req, res) => {
 });
 
 // @route   POST /api/executive/reply
-// @desc    Executive manually replies to a ticket
-router.post('/executive/reply', async (req, res) => {
+// @desc    Executive manually replies to a ticket — auth required
+router.post('/executive/reply', authenticate, async (req: any, res) => {
   try {
     const { inquiryId, content } = req.body;
     if (!inquiryId || !content) {
@@ -531,6 +536,12 @@ router.post('/executive/reply', async (req, res) => {
         content,
       }
     });
+
+    // Mark inquiry as in_progress when executive responds
+    await prisma.inquiry.update({
+      where: { id: inquiryId },
+      data: { status: 'in_progress' },
+    }).catch(() => { /* silently ignore if already in another terminal state */ });
 
     res.json({ message: 'Executive reply sent successfully' });
   } catch (err: any) {
