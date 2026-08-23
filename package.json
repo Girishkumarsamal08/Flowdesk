@@ -1,18 +1,19 @@
 {
   "name": "flowdesk",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Flowdesk - Automating Customer Support",
+  "description": "Flowdesk — AI-powered Customer Support OS",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "dev:frontend": "pnpm --prefix frontend run dev",
+    "dev": "pnpm dev:backend & pnpm dev:frontend",
     "dev:backend": "pnpm --prefix backend run dev",
-    "build:frontend": "pnpm --prefix frontend run build",
-    "build:backend": "pnpm --prefix backend run build",
+    "dev:frontend": "pnpm --prefix frontend run dev",
     "build": "pnpm build:backend && pnpm build:frontend",
-    "start:frontend": "pnpm --prefix frontend run start",
+    "build:backend": "pnpm --prefix backend run build",
+    "build:frontend": "pnpm --prefix frontend run build",
     "start:backend": "pnpm --prefix backend run start",
-    "install:all": "pnpm --prefix frontend install && pnpm --prefix backend install",
-    "postinstall": "pnpm install:all",
+    "start:frontend": "pnpm --prefix frontend run start",
+    "install:all": "pnpm --prefix backend install && pnpm --prefix frontend install",
     "lint": "pnpm --prefix frontend run lint"
   }
 }

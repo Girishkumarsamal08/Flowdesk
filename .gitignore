@@ -1,18 +1,36 @@
 venv/
 __pycache__/
 *.pyc
+
+# Environment files
 .env
 .env.*
-flowdesk.db
-flowdesk.db-journal
+!.env.example
+
+# Databases
 *.db
 *.db-journal
 *.sqlite
+
+# macOS
 .DS_Store
+
+# Vector store cache
 chroma_db/
+
+# Node
 node_modules/
 .next/
 dist/
 build/
+
+# Uploads (runtime-generated files)
 uploads/
+
+# Logs
 *.log
+
+# Test/scratch files
+test_*.ts
+test_*.cjs
+list_routes.ts

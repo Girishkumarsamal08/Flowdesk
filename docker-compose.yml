@@ -1,4 +1,5 @@
 services:
+  # ── PostgreSQL ────────────────────────────────────────────────────────────────
   db:
     image: postgres:15-alpine
     container_name: flowdesk_postgres
@@ -10,8 +11,14 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flowdesk_master -d flowdesk_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
+  # ── Redis ─────────────────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: flowdesk_redis
@@ -21,12 +28,42 @@ services:
       - redis_data:/data
     restart: unless-stopped
 
-  # Kafka will be added later when building the messaging/queue system
-  # kafka:
-  #   image: apache/kafka:latest
-  #   container_name: flowdesk_kafka
-  #   ...
+  # ── Backend (Express/Node.js) ─────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: flowdesk_backend
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://flowdesk_master:fd_admin_secret_99@db:5432/flowdesk_prod
+      NODE_ENV: production
+    ports:
+      - "5001:5001"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    restart: unless-stopped
+
+  # ── Frontend (Next.js) ────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: flowdesk_frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:5001
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
 
 volumes:
   postgres_data:
   redis_data:
+  uploads_data:
