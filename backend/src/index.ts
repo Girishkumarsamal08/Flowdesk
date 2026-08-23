@@ -2,9 +2,11 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Load .env from the project root (two dirs above src/index.ts)
+// Load .env from the project root (two dirs above src/index.ts) + local backend .env
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });     // root Flowdesk/.env
+dotenv.config({ path: path.resolve(__dirname, '../.env') });        // backend/.env (override)
+
 
 import express from 'express';
 
